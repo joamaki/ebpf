@@ -348,8 +348,6 @@ func coreCalculateFixup(byteOrder binary.ByteOrder, local Type, localID TypeID, 
 	}
 	zero := COREFixup{}
 
-	fmt.Printf("calculate fixup %s\n", relo.kind)
-
 	switch relo.kind {
 	case reloTypeIDTarget, reloTypeSize, reloTypeExists:
 		if len(relo.accessor) > 1 || relo.accessor[0] != 0 {
