@@ -344,6 +344,7 @@ func coreCalculateFixup(byteOrder binary.ByteOrder, local Type, localID TypeID, 
 		if relo.kind.checksForExistence() {
 			return fixup(1, 0)
 		}
+		fmt.Printf("poisoned relocation local=%s, relo=%v\n", local, relo)
 		return COREFixup{Kind: relo.kind, Local: 0, Target: 0, Poison: true, Validate: true}, nil
 	}
 	zero := COREFixup{}
@@ -356,6 +357,7 @@ func coreCalculateFixup(byteOrder binary.ByteOrder, local Type, localID TypeID, 
 
 		err := coreAreTypesCompatible(local, target)
 		if errors.Is(err, errImpossibleRelocation) {
+			fmt.Printf("incompatible types: local=%s, target=%s\n", local, target)
 			return poison()
 		}
 		if err != nil {
@@ -386,6 +388,7 @@ func coreCalculateFixup(byteOrder binary.ByteOrder, local Type, localID TypeID, 
 	case reloEnumvalValue, reloEnumvalExists:
 		localValue, targetValue, err := coreFindEnumValue(local, relo.accessor, target)
 		if errors.Is(err, errImpossibleRelocation) {
+			fmt.Printf("coreFindEnumValue failed, relo=%v, local=%s, target=%s, err: %s\n", relo, local, target, err)
 			return poison()
 		}
 		if err != nil {
@@ -420,6 +423,7 @@ func coreCalculateFixup(byteOrder binary.ByteOrder, local Type, localID TypeID, 
 
 		localField, targetField, validate, err := coreFindField(local, relo.accessor, target)
 		if errors.Is(err, errImpossibleRelocation) {
+			fmt.Printf("coreFindField failed, relo=%v, local=%s, target=%s, err: %s\n", relo, local, target, err)
 			return poison()
 		}
 		if err != nil {
@@ -680,6 +684,7 @@ func coreFindField(local Type, localAcc coreAccessor, target Type) (_, _ coreFie
 				// size in 'coreField' so we can later compute the proper bit shift.
 				size, offset, err := calculateBitfieldLoadJussi(-1, int(targetOffset), int(targetMember.BitfieldSize))
 				if err != nil {
+					fmt.Printf("failed to calculate bitfield relo: local=%s, targetOffset=%d, size=%d, err=%s", local, targetOffset, targetMember.BitfieldSize, err)
 					return coreField{}, coreField{}, true, err
 				}
 				target := target.copy()
